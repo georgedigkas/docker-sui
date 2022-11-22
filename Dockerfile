@@ -28,9 +28,8 @@ RUN apt install libclang-dev -y
 RUN curl -LfsSo /tmp/cmake.tar.gz ${BINARY_URL}; \
     echo "${ESUM} */tmp/cmake.tar.gz" | sha256sum -c -; \
     mkdir -p /opt/cmake; \
-    cd /opt/cmake
-
-RUN tar -xf /tmp/cmake.tar.gz --strip-components=1; \
+    cd /opt/cmake; \
+    tar -xf /tmp/cmake.tar.gz --strip-components=1; \
     cd cmake; \
     ./bootstrap; \
     make; \
