@@ -1,6 +1,7 @@
 # FROM rust
 # FROM debian
-FROM node:18-bullseye
+#docker buildx build --no-cache --platform linux/amd64,linux/arm64/v8 -t georgedigkas/sui:0.16.0 --push .
+FROM node:19-bullseye
 
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
@@ -13,55 +14,18 @@ ARG ESUM=306463f541555da0942e6f5a0736560f70c487178b9d94a5ae7f34d0538cdd48
 #ARG BINARY_URL=https://github.com/Kitware/CMake/releases/download/v{MAKE_VERSION}/cmake-{MAKE_VERSION}.tar.gz
 # BINARY_URL=https://github.com/Kitware/CMake/releases/download/v${MAKE_VERSION}/cmake-${MAKE_VERSION}.tar.gz
 
-# RUN apt-get update \
-#     && rustup update stable \
-#     && apt install curl \
-#     && apt-get install git-all \
-#     && apt-get install libssl-dev \
-#     && apt-get install libssl-dev \
-#     && apt-get install libclang-dev
+RUN apt-get update && apt-get install -y cmake clang curl git libssl-dev libclang-dev jq
 
-RUN apt-get update && apt-get install -y cmake clang curl git libssl-dev libclang-dev
-#RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs -y | sh
-
-#RUN rustup update stable
-# RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-#RUN apt update 
-#RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
-#RUN apt update
-#RUN apt install curl
-#RUN apt install git
-#RUN apt install libssl-dev
-# RUN apt-get install git
-# RUN apt-get install libssl-dev
-#RUN apt install libclang-dev -y
-#RUN apt install nodejs -y
-#RUN apt install npm -y
-#RUN apt install node -y
 RUN npm install -g pnpm
-
-#RUN curl -LfsSo /tmp/cmake.tar.gz ${BINARY_URL}; \
-#    echo "${ESUM} */tmp/cmake.tar.gz" | sha256sum -c -; \
-#    mkdir -p /opt/cmake; \
-#    cd /opt/cmake
-
-#RUN tar -xf /tmp/cmake.tar.gz --strip-components=1; \
-#    cd cmake; \
-#    ./bootstrap; \
-#    make; \
-#    make install
-
-#RUN set -eux; \
-#    curl https://sh.rustup.rs -sSf -y | sh ; \
 
 RUN set -eux; \
     dpkgArch="$(dpkg --print-architecture)"; \
     case "${dpkgArch##*-}" in \
-        amd64) rustArch='x86_64-unknown-linux-gnu'; rustupSha256='5cc9ffd1026e82e7fb2eec2121ad71f4b0f044e88bca39207b3f6b769aaa799c' ;; \
-        armhf) rustArch='armv7-unknown-linux-gnueabihf'; rustupSha256='48c5ecfd1409da93164af20cf4ac2c6f00688b15eb6ba65047f654060c844d85' ;; \
-        arm64) rustArch='aarch64-unknown-linux-gnu'; rustupSha256='e189948e396d47254103a49c987e7fb0e5dd8e34b200aa4481ecc4b8e41fb929' ;; \
-        i386) rustArch='i686-unknown-linux-gnu'; rustupSha256='0e0be29c560ad958ba52fcf06b3ea04435cb3cd674fbe11ce7d954093b9504fd' ;; \
-        *) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; \
+    amd64) rustArch='x86_64-unknown-linux-gnu'; rustupSha256='5cc9ffd1026e82e7fb2eec2121ad71f4b0f044e88bca39207b3f6b769aaa799c' ;; \
+    armhf) rustArch='armv7-unknown-linux-gnueabihf'; rustupSha256='48c5ecfd1409da93164af20cf4ac2c6f00688b15eb6ba65047f654060c844d85' ;; \
+    arm64) rustArch='aarch64-unknown-linux-gnu'; rustupSha256='e189948e396d47254103a49c987e7fb0e5dd8e34b200aa4481ecc4b8e41fb929' ;; \
+    i386) rustArch='i686-unknown-linux-gnu'; rustupSha256='0e0be29c560ad958ba52fcf06b3ea04435cb3cd674fbe11ce7d954093b9504fd' ;; \
+    *) echo >&2 "unsupported architecture: ${dpkgArch}"; exit 1 ;; \
     esac; \
     url="https://static.rust-lang.org/rustup/archive/1.25.1/${rustArch}/rustup-init"; \
     wget "$url"; \
@@ -74,7 +38,6 @@ RUN set -eux; \
     cargo --version; \
     rustc --version;
 
-RUN cargo install --locked --git https://github.com/MystenLabs/sui.git --branch devnet sui
+RUN cargo install --force --locked --git https://github.com/MystenLabs/sui.git --branch devnet sui
 
 EXPOSE 9000
-
