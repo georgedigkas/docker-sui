@@ -14,7 +14,17 @@ ARG ESUM=306463f541555da0942e6f5a0736560f70c487178b9d94a5ae7f34d0538cdd48
 #ARG BINARY_URL=https://github.com/Kitware/CMake/releases/download/v{MAKE_VERSION}/cmake-{MAKE_VERSION}.tar.gz
 # BINARY_URL=https://github.com/Kitware/CMake/releases/download/v${MAKE_VERSION}/cmake-${MAKE_VERSION}.tar.gz
 
-RUN apt-get update && apt-get install -y cmake clang curl git libssl-dev libclang-dev jq
+RUN apt-get update && apt-get install -y clang curl git libssl-dev libclang-dev jq
+
+RUN curl -LfsSo /tmp/cmake.tar.gz ${BINARY_URL}; \
+    echo "${ESUM} */tmp/cmake.tar.gz" | sha256sum -c -; \
+    mkdir -p /opt/cmake; \
+    cd /opt/cmake ; \
+    tar -xf /tmp/cmake.tar.gz --strip-components=1; \
+    cd cmake; \
+    ./bootstrap; \
+    make; \
+    make install
 
 RUN npm install -g pnpm
 
@@ -33,11 +43,9 @@ RUN set -eux; \
     chmod +x rustup-init; \
     ./rustup-init -y --no-modify-path --profile minimal --default-toolchain $RUST_VERSION --default-host ${rustArch}; \
     rm rustup-init; \
-    chmod -R a+w $RUSTUP_HOME $CARGO_HOME; \
-    rustup --version; \
-    cargo --version; \
-    rustc --version;
+    chmod -R a+w $RUSTUP_HOME $CARGO_HOME;
+# rustup --version; \
+# cargo --version; \
+# rustc --version;
 
 RUN cargo install --force --locked --git https://github.com/MystenLabs/sui.git --branch devnet sui
-
-EXPOSE 9000
